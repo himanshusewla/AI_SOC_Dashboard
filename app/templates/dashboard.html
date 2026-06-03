@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SOC Dashboard | Brute Force Detection</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <span class="logo-icon">🛡️</span>
+    <span class="logo-text">Sentinel<em>SOC AI</em></span>
+  </div>
+  <nav>
+    <a href="/" class="nav-item active"><span class="nav-icon">▦</span> Dashboard</a>
+    <a href="/alerts" class="nav-item"><span class="nav-icon">⚠</span> Alerts</a>
+    <a href="#" class="nav-item" onclick="openSimulator()"><span class="nav-icon">⚡</span> Simulator</a>
+    <a href="#ai-section" class="nav-item" onclick="loadAI()"><span class="nav-icon">🧠</span> AI Analysis</a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="status-dot"></span> System Online
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div>
+      <h1 class="page-title">Brute Force Detection & Threat Intelligence Dashboard</h1>
+      <p class="page-sub">Real-time brute force detection &amp; analytics</p>
+      <p class="page-sub">"Detect • Analyze • Defend"</p>
+    </div>
+    <div class="topbar-right">
+      <span id="live-clock"></span>
+      <button class="btn-refresh" onclick="refreshAll()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <section class="cards">
+    <div class="card card-blue">
+      <div class="card-label">Total Logins</div>
+      <div class="card-value" id="stat-total">{{ stats.total }}</div>
+      <div class="card-sub">All login attempts</div>
+    </div>
+    <div class="card card-green">
+      <div class="card-label">Successful</div>
+      <div class="card-value" id="stat-success">{{ stats.success }}</div>
+      <div class="card-sub">Authenticated sessions</div>
+    </div>
+    <div class="card card-red">
+      <div class="card-label">Failed Attempts</div>
+      <div class="card-value" id="stat-failed">{{ stats.failed }}</div>
+      <div class="card-sub">Rejected logins</div>
+    </div>
+    <div class="card card-yellow">
+      <div class="card-label">Alerts Triggered</div>
+      <div class="card-value" id="stat-alerts">{{ stats.alerts }}</div>
+      <div class="card-sub">Brute-force events</div>
+    </div>
+  </section>
+
+  <!-- CHARTS ROW -->
+  <section class="charts-row">
+    <div class="chart-box">
+      <h2 class="chart-title">Login Activity (Last 24h)</h2>
+      <canvas id="hourlyChart" height="120"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2 class="chart-title">Top Attacking IPs</h2>
+      <canvas id="ipChart" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- RECENT LOGS TABLE -->
+  <section class="table-box">
+    <h2 class="chart-title">Recent Login Logs</h2>
+    <div class="table-wrap">
+      <table id="logs-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Timestamp</th><th>Username</th><th>IP Address</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logs-body">
+          <tr><td colspan="5" style="text-align:center;padding:2rem">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<!-- AI ANOMALY SECTION -->
+<section class="table-box" id="ai-section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h2 class="chart-title" style="margin:0">🧠 AI Anomaly Detection — Isolation Forest</h2>
+    <button class="btn-refresh" onclick="loadAI()">▶ Run AI Analysis</button>
+  </div>
+  <p style="color:var(--muted);font-size:.82rem;margin-bottom:1.25rem">
+    Scikit-learn Isolation Forest trained on: total attempts, failed ratio, peak-hour density, unique usernames per IP.
+    Anomaly score &lt; 0 = suspicious behaviour flagged by AI.
+  </p>
+  <div id="ai-status" style="color:var(--muted);font-family:var(--font-mono);font-size:.85rem">Click "Run AI Analysis" to detect anomalies.</div>
+  <div class="table-wrap" id="ai-table-wrap" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>IP Address</th><th>Attempts</th><th>Fail Ratio</th>
+          <th>Peak Hour %</th><th>Unique Users</th>
+          <th>AI Score</th><th>AI Risk</th>
+        </tr>
+      </thead>
+      <tbody id="ai-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SIMULATOR MODAL -->
+<div id="simulator-modal" class="modal hidden">
+  <div class="modal-box">
+    <h2>Login Simulator</h2>
+    <p>Simulate login attempts to trigger brute-force detection.</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input id="sim-user" value="admin" type="text"/>
+    </div>
+    <div class="form-group">
+      <label>IP Address</label>
+      <input id="sim-ip" value="45.33.32.156" type="text"/>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="sim-status">
+        <option value="FAILED">FAILED</option>
+        <option value="SUCCESS">SUCCESS</option>
+      </select>
+    </div>
+    <div class="sim-btns">
+      <button class="btn-sim" onclick="sendLogin()">Send 1 Attempt</button>
+      <button class="btn-sim btn-burst" onclick="sendBurst()">Burst Attack (10x)</button>
+      <button class="btn-close" onclick="closeSimulator()">Close</button>
+    </div>
+    <div id="sim-result"></div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
