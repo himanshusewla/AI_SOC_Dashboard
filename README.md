@@ -29,7 +29,7 @@ A real-time Security Operations Center (SOC) dashboard that detects brute-force 
 
 ### 1. Clone or download the project
 ```bash
-git clone https://github.com/YOUR_USERNAME/AI_SOC_Dashboard.git
+git clone https://github.com/Yhimanshusewla/AI_SOC_Dashboard.git
 cd AI_SOC_Dashboard
 ```
 
@@ -134,7 +134,7 @@ AI_SOC_Dashboard/
 git init
 git add .
 git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/AI_SOC_Dashboard.git
+git remote add origin https://github.com/himanshuseewla/AI_SOC_Dashboard.git
 git push -u origin main
 ```
 
