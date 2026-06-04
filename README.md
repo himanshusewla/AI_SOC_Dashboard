@@ -29,7 +29,7 @@ A real-time Security Operations Center (SOC) dashboard that detects brute-force 
 
 ### 1. Clone or download the project
 ```bash
-git clone https://github.com/Yhimanshusewla/AI_SOC_Dashboard.git
+git clone https://github.com/himanshusewla/AI_SOC_Dashboard.git
 cd AI_SOC_Dashboard
 ```
 
